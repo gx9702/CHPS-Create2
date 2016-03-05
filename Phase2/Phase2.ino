@@ -10,7 +10,6 @@
 
 //wiring
 //red 1
-//green 0
 // When you flash the program to the Arduino
 // Remember to unplag red and green wires
 // When you are charing
@@ -30,112 +29,6 @@ int echoPin1 = 2;
 int initPin1 = 3;
 int echoPin2 = 4;
 int initPin2 = 5;
-
-void setup(){
-  Serial.begin(19200);
-
-  pinMode(initPin1, OUTPUT);
-  pinMode(echoPin1, INPUT);
-  pinMode(initPin2, OUTPUT);
-  pinMode(echoPin2, INPUT);
-
-  pixy.init();
-  
-  Serial.write(128);  // START
-  delay(50);
-  Serial.write(131);  // SAFE MODE
-  delay(50);
-  
-  spin();
-  delay(2000);
-};
-
-int test1 = 0;
-int test2 = 0;
-int delay_flag = 0;
-
-uint16_t blocks;
-
-void loop() 
-{
-  test1 = SonarSensor3(initPin1,echoPin1);
-  test2 = SonarSensor2(initPin2,echoPin2);
-
-  
-  blocks = pixy.getBlocks();
-
-  if(blocks>0)
-  {
-    color_follow(blocks);
-    spin();
-    //delay_flag = 1;
-  }  
-  else
-  {
-    //if (delay_flag)
-    //{
-      //delay(2000);
-      //delay_flag = 0;
-    //}
-    random_walk();
-  }
-}
-
-void color_follow(int blocks)
-{
-      //for (int k = 0; k < blocks; k++)
-      //{
-
-        /*
-        if (pixy.blocks[blocks-1].height < 100)
-        {
-          moveForward();
-          Serial.println("\ngo forward\n");
-          delay(200);
-        }
-        else
-        {
-          Serial.println("\ngo backward\n");
-          moveBackward(); 
-          delay(200); 
-        }
-        */
-        
-        if(pixy.blocks[blocks-1].x < 150)
-        {
-          //Serial.println("\nturn left\n");
-          moveLeft();
-          //delay(200);
-        }
-        else
-        {
-          //Serial.println("\nturn right\n");
-          moveRight(); 
-          //delay(200);        
-        }
-      //}
-}
-
-void random_walk()
-{
-    Serial.println("\nno blocks\n");
-    if(test1 < 25 | test2 <25)
-    {  
-      blocks = pixy.getBlocks();
-      if (blocks == 0)
-      {
-        //Serial.println("change trajectory\n");
-      //Serial.println("\n");
-      //Serial.println(test2);
-      ///Serial.println("\n");
-        moveBackward();
-        delay(1000);
-        moveRight();
-        delay(2000); 
-      }
-    }
-    moveForward();
-}
 
 void spin()
 {
@@ -180,6 +73,125 @@ void moveRight()
   Serial.write(0x6A);
   Serial.write(0x00);
   Serial.write(0x96);  
+}
+
+void setup(){
+  Serial.begin(19200);
+
+  pinMode(initPin1, OUTPUT);
+  pinMode(echoPin1, INPUT);
+  pinMode(initPin2, OUTPUT);
+  pinMode(echoPin2, INPUT);
+
+  pixy.init();
+  
+  Serial.write(128);  // START
+  delay(50);
+  Serial.write(131);  // SAFE MODE
+  delay(50);
+  
+  spin();
+  delay(2000);
+
+  //Serial.println("phase2 starts\n");
+};
+
+int test1 = 0;
+int test2 = 0;
+int delay_flag = 0;
+
+uint16_t blocks;
+
+void loop() 
+{
+  //test1 = SonarSensor3(initPin1,echoPin1);
+  //test2 = SonarSensor2(initPin2,echoPin2);
+  
+  blocks = pixy.getBlocks();
+
+  if(blocks>0)
+  {
+    color_follow(blocks);
+    //spin();
+    //delay_flag = 1;
+  }  
+  else
+  {
+    //Serial.println("\nspin\n");
+    //spin();
+    //delay(500);
+  }
+  //{
+    //if (delay_flag)
+    //{
+      //delay(2000);
+      //delay_flag = 0;
+    //}
+    //random_walk();
+  //}
+}
+
+void color_follow(int blocks)
+{
+      //for (int k = 0; k < blocks; k++)
+      //{
+
+        
+        if (pixy.blocks[blocks-1].height < 100)
+        {
+          moveForward();
+          //Serial.println("\ngo forward\n");
+          //delay(200);
+        }
+        //else if(pixy.blocks[blocks-1].height > 100)
+        //{
+          //Serial.println("\ngo backward\n");
+          //moveBackward(); 
+          //delay(200); 
+        //}
+        //else
+        //{
+          //delay(200);  
+        //}
+        
+        if(pixy.blocks[blocks-1].x < 100)
+        {
+          //Serial.println("\nturn Right\n");
+          moveRight();
+          //delay(200);
+        }
+        else if(pixy.blocks[blocks-1].x > 200)
+        {
+          //Serial.println("\nturn left\n");
+          moveLeft(); 
+          //delay(200);        
+        }
+        //else
+        //{
+          //delay(200);  
+        //}
+      //}
+}
+
+void random_walk()
+{
+    Serial.println("\nno blocks\n");
+    if(test1 < 25 | test2 <25)
+    {  
+      blocks = pixy.getBlocks();
+      if (blocks == 0)
+      {
+        Serial.println("change trajectory\n");
+        Serial.println("\n");
+        Serial.println(test2);
+        Serial.println("\n");
+        moveBackward();
+        delay(1000);
+        moveRight();
+        delay(random(1200,3000)); 
+      }
+    }
+    moveForward();
 }
 
 int SonarSensor1(int initPin, int echoPin)
