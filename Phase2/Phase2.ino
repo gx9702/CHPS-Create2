@@ -18,6 +18,8 @@
 #include <SPI.h>  
 #include <Pixy.h>
 
+#define CameraPin 8
+
 Pixy pixy;
 
 
@@ -37,6 +39,36 @@ void spin()
   Serial.write(0x0B);
   Serial.write(0xFF);
   Serial.write(0xF5);
+}
+
+int sensorData = 0;
+
+int readBumperSensor()
+{
+  Serial.write(142);
+  Serial.write(7);
+  //Serial.write(7);
+  //Serial.write(13);
+
+  //Serial.write(148);
+  //Serial.write(2);
+  //Serial.write(43);
+  //Serial.write(44);
+  //delay(100);
+
+  // right bumper 127
+  // front bumper 126
+  // left bumper 63
+  if(Serial.available())
+  { 
+    sensorData = Serial.read();
+    //Serial.print("SensorData Read: ");
+    Serial.println(sensorData);
+    //Serial.print("\n");
+    return(sensorData);
+  }
+  else
+    return(1234);
 }
 
 void moveForward()
@@ -88,9 +120,10 @@ void setup(){
   Serial.write(128);  // START
   delay(50);
   Serial.write(131);  // SAFE MODE
+  //Serial.write(132);  // FULL MODE
   delay(50);
   
-  spin();
+  //spin();
   delay(2000);
 
   //Serial.println("phase2 starts\n");
@@ -106,19 +139,66 @@ void loop()
 {
   //test1 = SonarSensor3(initPin1,echoPin1);
   //test2 = SonarSensor2(initPin2,echoPin2);
+
+  //spin();
+  //Serial.print("left Sonar: ");
+  //Serial.println(test1);
+
+  //Serial.println("right Sonar: \r");
+  //Serial.println(test2);
+  moveForward();
   
+  int sensorData = readBumperSensor();
+
+  if (sensorData == 127)
+  {
+    moveLeft();
+    delay(1000);
+    sensorData = 0 ; // clear readings
+  }
+  
+  if (sensorData == 126)
+  {  
+    moveBackward();
+    delay(1000);
+    spin();
+    delay(3000);
+    sensorData = 0 ; // clear readings
+  }
+
+  if (sensorData == 63)
+  {
+    moveRight();
+    delay(1000);
+    sensorData = 0 ; // clear readings
+  }
+
+  
+  // right bumper 127
+  // front bumper 126
+  // left bumper 63
+  
+  
+  /*
   blocks = pixy.getBlocks();
 
-  if(blocks>0)
+  if(blocks > 0)
   {
-    color_follow(blocks);
+    if (pixy.blocks[0].signature == 1)
+      color_follow(blocks);
+    else if (pixy.blocks[0].signature == 2 | pixy.blocks[1].signature == 2)
+      digitalWrite(CameraPin, HIGH);      
     //spin();
     //delay_flag = 1;
-  }  
+  } 
+  else if(blocks == 2)
+  {
+    digitalWrite(CameraPin, HIGH);
+  } 
   else
   {
     //Serial.println("\nspin\n");
-    //spin();
+    spin();
     //delay(500);
   }
   //{
@@ -129,6 +209,9 @@ void loop()
     //}
     //random_walk();
   //}
+
+  */
+  delay(100);
 }
 
 void color_follow(int blocks)
@@ -157,13 +240,15 @@ void color_follow(int blocks)
         if(pixy.blocks[blocks-1].x < 100)
         {
           //Serial.println("\nturn Right\n");
-          moveRight();
+          //moveRight();
+          moveLeft();
           //delay(200);
         }
         else if(pixy.blocks[blocks-1].x > 200)
         {
           //Serial.println("\nturn left\n");
-          moveLeft(); 
+          //moveLeft(); 
+          moveRight();
           //delay(200);        
         }
         //else
