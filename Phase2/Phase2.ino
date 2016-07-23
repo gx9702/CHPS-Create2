@@ -10,6 +10,7 @@
 
 //wiring
 //red 1
+//orange 0
 // When you flash the program to the Arduino
 // Remember to unplag red and green wires
 // When you are charing
@@ -63,7 +64,7 @@ int readBumperSensor()
   { 
     sensorData = Serial.read();
     //Serial.print("SensorData Read: ");
-    Serial.println(sensorData);
+    //Serial.println(sensorData);
     //Serial.print("\n");
     return(sensorData);
   }
@@ -78,6 +79,15 @@ void moveForward()
   Serial.write(0xC8);
   Serial.write(0x00);
   Serial.write(0xC8);
+}
+
+void STOP()
+{
+  Serial.write(145);
+  Serial.write(0x00);
+  Serial.write(0x00);
+  Serial.write(0x00);
+  Serial.write(0x00);
 }
 
 void moveBackward()
@@ -115,6 +125,7 @@ void setup(){
   pinMode(initPin2, OUTPUT);
   pinMode(echoPin2, INPUT);
 
+  pinMode(CameraPin, OUTPUT);
   pixy.init();
   
   Serial.write(128);  // START
@@ -146,61 +157,68 @@ void loop()
 
   //Serial.println("right Sonar: \r");
   //Serial.println(test2);
-  moveForward();
-  
+  //moveForward();
+  STOP();
   int sensorData = readBumperSensor();
 
   if (sensorData == 127)
   {
     moveLeft();
     delay(1000);
-    sensorData = 0 ; // clear readings
   }
   
-  if (sensorData == 126)
+  else if (sensorData == 126)
   {  
     moveBackward();
     delay(1000);
-    spin();
-    delay(3000);
-    sensorData = 0 ; // clear readings
+    moveRight();
+    delay(1000);
   }
 
-  if (sensorData == 63)
+  else if (sensorData == 63)
   {
     moveRight();
     delay(1000);
-    sensorData = 0 ; // clear readings
   }
+
+  sensorData = 0 ; // clear readings
 
   
   // right bumper 127
   // front bumper 126
   // left bumper 63
   
-  
-  /*
   blocks = pixy.getBlocks();
 
   if(blocks > 0)
   {
     if (pixy.blocks[0].signature == 1)
       color_follow(blocks);
+      //STOP();
     else if (pixy.blocks[0].signature == 2 | pixy.blocks[1].signature == 2)
-      digitalWrite(CameraPin, HIGH);      
+    {
+      //STOP();
+      digitalWrite(CameraPin, HIGH);
+      delay(100); 
+      digitalWrite(CameraPin, LOW);     
+    }
     //spin();
     //delay_flag = 1;
   } 
   else if(blocks == 2)
   {
+    //STOP();
     digitalWrite(CameraPin, HIGH);
+    delay(100); 
+    digitalWrite(CameraPin, LOW); 
+    //delay(5000);
   } 
-  else
-  {
+  //else
+  //{
     //Serial.println("\nspin\n");
-    spin();
+    //spin();
     //delay(500);
-  }
+  //}
   //{
     //if (delay_flag)
     //{
@@ -210,7 +228,7 @@ void loop()
     //random_walk();
   //}
 
-  */
+  
   delay(100);
 }
 
